@@ -1,7 +1,13 @@
 Context = require './context.coffee'
 
+stringToSet = (string) ->
+  set = {}
+  for element in string.split /\s+/
+    set[element] = true
+  set
+
 class HTMLContext extends Context
-  @doctypes:
+  doctypes =
     'default': '<!DOCTYPE html>'
     '5': '<!DOCTYPE html>'
     'xml': '<?xml version="1.0" encoding="utf-8" ?>'
@@ -14,9 +20,9 @@ class HTMLContext extends Context
     'ce': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "ce-html-1.0-transitional.dtd">'
 
   doctype: (type = 'default') ->
-    @rawnl HTMLContext.doctypes[type]
+    @rawnl doctypes[type]
 
-  @elements: '''
+  htmlElements = stringToSet '''
     a abbr address article aside audio b bdi bdo blockquote body button canvas
     caption cite code colgroup datalist dd del details dfn div dl dt em fieldset
     figcaption figure footer form h1 h2 h3 h4 h5 h6 head header hgroup html i
@@ -24,21 +30,21 @@ class HTMLContext extends Context
     optgroup option output p pre progress q rp rt ruby s samp script section
     select small span strong style sub summary sup table tbody td textarea tfoot
     th thead time title tr u ul var video
-  '''.split /\s+/
+  '''
 
-  @selfClosings: '''
+  selfClosingElements = stringToSet '''
     area base br col command embed hr img input keygen link meta param
     source track wbr
-  '''.split /\s+/
+  '''
 
   constructor: (o) ->
     super o
-    for tags in [ HTMLContext.elements, HTMLContext.selfClosings ]
-      for tag in tags then do (tag) =>
+    for tags in [ htmlElements, selfClosingElements ]
+      for tag of tags then do (tag) =>
         @[tag] = -> @renderTag(tag, arguments)
 
   isSelfClosing: (tagName) ->
-    tagName in HTMLContext.selfClosings
+    selfClosingElements[tagName] || false
 
   ie: (condition, contents) ->
     @rawnl "<!--[if #{condition}]>"
@@ -52,7 +58,7 @@ class HTMLContext extends Context
   # consequently to any helpers it might need. So we need to reintroduce these
   # inside any "rewritten" function.
   # From coffee-script/lib/coffee-script/nodes.js under UTILITIES
-  @coffeescriptHelpers:
+  coffeescriptHelpers =
     __extends: """
       function(child, parent) {
         for (var key in parent) {
@@ -84,7 +90,7 @@ class HTMLContext extends Context
   csToString: (aFunction) ->
     helpers = ''
     t = "#{aFunction}"
-    for k, v of HTMLContext.coffeescriptHelpers
+    for k, v of coffeescriptHelpers
       if t.indexOf(k) >= 0
         helpers += ',' if helpers
         helpers += "#{k}=#{v}"
@@ -107,7 +113,7 @@ class HTMLContext extends Context
         param.type = 'text/coffeescript'
         @script param
 
-  css_props = '''
+  validCSSProperties = stringToSet '''
     align-content align-items align-self alignment-adjust alignment-baseline
     anchor-point animation animation-delay animation-direction
     animation-duration animation-iteration-count animation-name
@@ -168,16 +174,10 @@ class HTMLContext extends Context
     visibility voice-balance voice-duration voice-family voice-pitch voice-range
     voice-rate voice-stress voice-volume volume white-space widows width
     word-break word-spacing word-wrap z-index
-  '''.split(/\s+/)
-
-  valid_css_prop = {}
-  for p in css_props
-    valid_css_prop[p] = true
-
-  @_imw: [ "", "ms-", "-moz-", "-webkit-", "" ]
+  '''
 
   # See WD or CR at http://peter.sh/experiments/vendor-prefixed-css-property-overview/
-  @css_needs_prefix: '''
+  prefixedCSSProperties = stringToSet '''
     animation animation-delay animation-direction animation-duration
     animation-iteration-count animation-name animation-play-state
     animation-timing-function backface-visibility border-bottom-left-radius
@@ -188,18 +188,12 @@ class HTMLContext extends Context
     column-rule-width column-span column-width columns filter ime-mode opacity
     overflow-x overflow-y perspective perspective-origin text-align-last
     text-autospace text-justify text-overflow
-  '''.split(/\s+/)
-
-  prefixed_css_prop = do =>
-    tmp = {}
-    for p in HTMLContext.css_needs_prefix
-      tmp[p] = true
-    tmp
+  '''
 
   parseCSSProperty: (prop, val, parent, open) ->
     #  _ to -
     t = prop.replace /_/g, '-'
-    prop = t if valid_css_prop[t]
+    prop = t if validCSSProperties[t]
 
     if typeof val is 'object'
       # subselector
@@ -213,7 +207,7 @@ class HTMLContext extends Context
       line += @unit if typeof val is 'number'
       line += ";"
       @rawnl line
-      if prefixed_css_prop[prop]
+      if prefixedCSSProperties[prop]
         for pre in [ "ms-", "-moz-", "-webkit-" ]
           @rawnl "#{pre}#{line}"
       return yes
