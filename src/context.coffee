@@ -1,7 +1,7 @@
 class Context
   constructor: (@options) ->
     @_buffer = ''
-    @_indent = ''
+    @_indent = 0
 
   setOptions: (options) ->
     options.format      ?= on
@@ -82,9 +82,9 @@ class Context
 
   renderContents: (contents, escape) ->
     if typeof contents is 'function'
-      @_indent += '  ' if @options.format
+      @_indent++
       contents = contents.call(this)
-      @_indent = @_indent[2..] if @options.format
+      @_indent--
       if contents is Context.NEWLINE
         @rawnl ""
     switch typeof contents
@@ -107,9 +107,9 @@ class Context
     if @options.format
       if @_buffer != ''
         @raw "\n"
-      @raw "#{@_indent}#{txt}"
-    else
-      @raw txt
+      for _ in [0 ... @_indent]
+        @raw '  '
+    @raw txt
     null
 
   raw: (txt) ->
