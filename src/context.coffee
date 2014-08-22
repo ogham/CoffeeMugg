@@ -21,7 +21,7 @@ class Context
       contents.call(this, args...)
     this
 
-  render_tag: (name, args) ->
+  renderTag: (name, args) ->
     # get idclass, attrs, contents
     for a in args
       switch typeof a
@@ -40,18 +40,18 @@ class Context
             else
               contents = a
     @rawnl "<#{name}"
-    @render_idclass(idclass) if idclass
-    @render_attrs(attrs) if attrs
+    @renderIDAndClass(idclass) if idclass
+    @renderAttributes(attrs) if attrs
     if @isSelfClosing(name)
       @raw ' />'
     else
       @raw '>'
       escapeContents = name != 'script' # do not escape the contents of a <script> tag.
-      @render_contents(contents, escapeContents)
+      @renderContents(contents, escapeContents)
       @raw "</#{name}>"
     Context.NEWLINE
 
-  render_idclass: (str) ->
+  renderIDAndClass: (str) ->
     classes = []
     str = String(str).replace /"/, "&quot;"
     for i in str.split /\s*\.\s*/
@@ -63,7 +63,7 @@ class Context
     @raw " class=\"#{classes.join ' '}\"" if classes.length > 0
     null
 
-  render_attrs: (obj) ->
+  renderAttributes: (obj) ->
     for k, v of obj
       # Hyphenate any camelcase attributes
       k = k.replace(/([A-Z])/g, '-$1').toLowerCase()
@@ -81,7 +81,7 @@ class Context
         @raw " #{k}=\"#{String(v).replace(/&/g,"&amp;").replace(/"/g,"&quot;")}\""
     null
 
-  render_contents: (contents, escape) ->
+  renderContents: (contents, escape) ->
     if typeof contents is 'function'
       @_indent += '  ' if @options.format
       contents = contents.call(this)
@@ -121,7 +121,7 @@ class Context
     null
 
   tag: (name, args...) ->
-    @render_tag(name, args)
+    @renderTag(name, args)
 
   comment: (cmt) ->
     @rawnl "<!--#{cmt}-->"

@@ -35,14 +35,14 @@ class HTMLContext extends Context
     super o
     for tags in [ HTMLContext.elements, HTMLContext.selfClosings ]
       for tag in tags then do (tag) =>
-        @[tag] = -> @render_tag(tag, arguments)
+        @[tag] = -> @renderTag(tag, arguments)
 
   isSelfClosing: (tagName) ->
     tagName in HTMLContext.selfClosings
 
   ie: (condition, contents) ->
     @rawnl "<!--[if #{condition}]>"
-    @render_contents(contents)
+    @renderContents(contents)
     @raw "<![endif]-->"
     Context.NEWLINE
 
@@ -52,7 +52,7 @@ class HTMLContext extends Context
   # consequently to any helpers it might need. So we need to reintroduce these
   # inside any "rewritten" function.
   # From coffee-script/lib/coffee-script/nodes.js under UTILITIES
-  @coffeescript_helpers:
+  @coffeescriptHelpers:
     __extends: """
       function(child, parent) {
         for (var key in parent) {
@@ -84,7 +84,7 @@ class HTMLContext extends Context
   csToString: (aFunction) ->
     helpers = ''
     t = "#{aFunction}"
-    for k, v of HTMLContext.coffeescript_helpers
+    for k, v of HTMLContext.coffeescriptHelpers
       if t.indexOf(k) >= 0
         helpers += ',' if helpers
         helpers += "#{k}=#{v}"
@@ -196,7 +196,7 @@ class HTMLContext extends Context
       tmp[p] = true
     tmp
 
-  parse_prop: (prop, val, parent, open) ->
+  parseCSSProperty: (prop, val, parent, open) ->
     #  _ to -
     t = prop.replace /_/g, '-'
     prop = t if valid_css_prop[t]
@@ -204,7 +204,7 @@ class HTMLContext extends Context
     if typeof val is 'object'
       # subselector
       @rawnl "}" if open
-      @parse_selector prop, val, parent
+      @parseSelector prop, val, parent
       return no
     else
       # CSS property
@@ -218,7 +218,7 @@ class HTMLContext extends Context
           @rawnl "#{pre}#{line}"
       return yes
 
-  parse_selector: (selector, obj, parent) ->
+  parseSelector: (selector, obj, parent) ->
     if parent
       # Rewrite our selector using the parent
       selectors = for p in parent.split /\s*,\s*/
@@ -233,10 +233,10 @@ class HTMLContext extends Context
     @_indent += '  ' if @options.format
     if obj instanceof Array
       for o in obj then for prop, val of o
-        open = @parse_prop prop, val, selector, open
+        open = @parseCSSProperty prop, val, selector, open
     else if typeof obj is 'object'
       for prop, val of obj
-        open = @parse_prop prop, val, selector, open
+        open = @parseCSSProperty prop, val, selector, open
     else
       throw Error "Don't know what to do with #{obj}"
     @_indent = @_indent[2..] if @options.format
@@ -248,10 +248,10 @@ class HTMLContext extends Context
       if arg instanceof Array
         for obj in arg
           for k, v of obj
-            @parse_selector k, v
+            @parseSelector k, v
       else if typeof arg is 'object'
         for k, v of arg
-          @parse_selector k, v
+          @parseSelector k, v
       else
         throw Error "@css takes objects or arrays of objects"
     null
