@@ -2,7 +2,7 @@
 #
 # Adapted from https://github.com/gradus/coffeecup/blob/master/src/cli.coffee
 
-cm = require '../lib/coffeemugg'
+cm = require '../src/coffeemugg'
 fs = require 'fs'
 path = require 'path'
 log = console.log
@@ -47,7 +47,7 @@ write = (input_path, name, contents, output_directory, ext) ->
   exists = fs.exists or path.exists
   exists dir, (exists) ->
     unless exists then fs.mkdirSync dir
-    
+
     output_path = path.join dir, filename
     contents = ' ' if contents.length <= 0
     fs.writeFile output_path, contents, (err) ->
@@ -67,7 +67,7 @@ switches = [
   ['-v', '--version', 'display coffeemugg version']
   ['-h', '--help', 'display this help message']
 ]
- 
+
 @run = ->
   parser = new OptionParser switches, usage
   options = parser.parse argv

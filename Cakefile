@@ -5,8 +5,7 @@ task 'build', ->
   run 'coffee -o lib -c src/*.coffee'
 
 task 'test', ->
-  run 'cake build', ->
-    require('./test').run()
+  run 'coffee test.coffee'
 
 task 'bench', -> require('./benchmark').run()
 
@@ -23,7 +22,7 @@ run = (args...) ->
         if a instanceof Array then params = a
         else options = a
       when 'function' then callback = a
-  
+
   command += ' ' + params.join ' ' if params?
   cmd = spawn '/bin/sh', ['-c', command], options
   cmd.stdout.on 'data', (data) -> process.stdout.write data

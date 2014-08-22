@@ -1,5 +1,5 @@
 tests =
-      
+
   'Raw text':
     template: ->
       @raw '<foo/>'
@@ -110,12 +110,12 @@ tests =
     template: ->
       @img '#myid.myclass', src: '/pic.png'
     expected: '<img id="myid" class="myclass" src="/pic.png" />'
-      
+
   'Attribute values':
     template: ->
       @br vrai: yes, faux: no, undef: @foo, nil: null, str: 'str', num: 42, arr: [1, 2, 3], obj: {foo: 'bar'}, func: ->,
     expected: '<br vrai="vrai" str="str" num="42" arr="1,2,3" obj="[object Object]" func="(function () {}).call(this);" />'
-    
+
   'IE conditionals':
     template: ->
       @html ->
@@ -211,7 +211,7 @@ tests =
           animation: "foo"
     expected: 'selector {animation: foo;ms-animation: foo;-moz-animation: foo;-webkit-animation: foo;}'
 
-cm = require './lib/coffeemugg'
+cm = require './src/coffeemugg.coffee'
 
 @run = ->
   {print} = require 'sys'
@@ -230,7 +230,7 @@ cm = require './lib/coffeemugg'
       else
         test.result = cm.render(test.template, test.options, (test.params || [])...)
         test.success = test.result is test.expected
-        
+
       if test.success
         passed.push name
         print "[Passed] #{name}\n"
@@ -243,7 +243,7 @@ cm = require './lib/coffeemugg'
       printc 'redder', "[Error]  #{name}\n"
 
   print "\n#{total} tests, #{passed.length} passed, #{failed.length} failed, #{errors.length} errors\n\n"
-  
+
   if failed.length > 0
     printc 'red', "FAILED:\n\n"
 
@@ -264,3 +264,5 @@ cm = require './lib/coffeemugg'
       print t.template + "\n"
       printc 'green', t.expected + "\n"
       printc 'redder', t.result.stack + "\n\n"
+
+@run()
