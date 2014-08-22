@@ -1,7 +1,6 @@
 class Context
   constructor: (@options) ->
     @_buffer = ''
-    @_newline = ''
     @_indent = ''
 
   setOptions: (options) ->
@@ -105,8 +104,12 @@ class Context
   h: @::htmlEscape
 
   rawnl: (txt) ->
-    @raw "#{@_newline}#{@_indent}#{txt}"
-    @_newline = "\n" if @options.format
+    if @options.format
+      if @_buffer != ''
+        @raw "\n"
+      @raw "#{@_indent}#{txt}"
+    else
+      @raw txt
     null
 
   raw: (txt) ->
@@ -132,7 +135,6 @@ class Context
 
   reset: ->
     @_buffer  = ''
-    @_newline = ''
     @_indent  = ''
     return @
 
