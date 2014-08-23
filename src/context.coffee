@@ -12,12 +12,8 @@ class Context
   @NEWLINE = {}
 
   render: (contents, args...) ->
-    if typeof contents is 'string'
-      throw Error "Need module 'coffee-script' to compile code." if not coffee?
-      eval "contents = function () {#{coffee.compile contents, bare: yes}}"
     @reset()
-    if typeof contents is 'function'
-      contents.call(this, args...)
+    contents.call(this, args...)
     this
 
   renderTag: (name, args) ->
