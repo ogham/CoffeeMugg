@@ -16,6 +16,11 @@ class Context
     contents.call(this, args...)
     this
 
+  renderFromString: (contents, args...) ->
+    contents = eval "output = function () {#{require('coffee-script').compile contents, bare: yes}}"
+    @render contents, args...
+    this
+
   renderTag: (name, args) ->
     # get idclass, attrs, contents
     for a in args
