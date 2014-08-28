@@ -9,6 +9,7 @@
   "keywords": ["template", "view", "coffeescript", "coffeekup"],
   "main": "./lib/coffeemugg",
   "engines": {"node": ">= 0.4.7"},
+  "bin": { "coffeemugg": "./bin/coffeemugg" },
   "contributors": [
     "Maurice Machado <maurice@bitbending.com>",
     "W. Mertens <https://github.com/wmertens>"
